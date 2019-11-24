@@ -34,6 +34,14 @@ int sdisk::getblock(int blocknumber, string& buffer){
 }
 
 int sdisk::putblock(int blocknumber, string buffer){
+	
+	if(buffer.length() > blocksize){
+		return -1;
+	}
+	
+	for(int i = buffer.size(); i < blocksize; i++)
+		buffer += "#";
+	
 	fstream diskfile;
 	diskfile.open(diskname.c_str(), ios::out | ios::in);
 	diskfile.seekp(blocknumber*blocksize);

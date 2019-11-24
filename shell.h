@@ -1,11 +1,12 @@
-#include "filesys.h"
+#include "Table.h"
 
 #ifndef SHELL_H
 #define SHELL_H
 
-class Shell : public Filesys{
+class Shell : public Table{
 public:
 	Shell(string filename, int blocksize, int numberofblocks);
+	~Shell(){fsclose();}
 	int dir();
 	int add(string file);
 	int del(string file);

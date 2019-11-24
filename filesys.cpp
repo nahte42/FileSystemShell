@@ -4,9 +4,10 @@
 Filesys::Filesys(string dn, int nb, int bs):sdisk(dn,nb,bs){
 	string buffer;
 	rootsize = getblocksize()/13;
+	//cout<<rootsize<<endl;
 	fatsize = ((4*getnumberofblocks())/getblocksize()) + 1;
 	getblock(1, buffer);
-	cout<<buffer[0]<<endl;
+	//cout<<buffer[0]<<endl;
 	//cout<<"File sys was called correctly: \n";
 	
 	if(buffer[0] == '#'){
@@ -14,15 +15,19 @@ Filesys::Filesys(string dn, int nb, int bs):sdisk(dn,nb,bs){
 			filename.push_back("xxxxxxxx");
 			firstblock.push_back(0);
 		}
+		
 		fat.push_back(2+fatsize);
 		fat.push_back(-1);
 		for(int i = 1; i < fatsize; i++){
 			fat.push_back(-1);
 		}
+		fat.push_back(-1);
 		for(int i = fatsize+2; i < getnumberofblocks(); i++){
 			fat.push_back(i+1);
 		}
+		
 		fat[fat.size()-1] = 0;
+	
 	}
 	else{
 		istringstream instream, instream2;
@@ -37,14 +42,16 @@ Filesys::Filesys(string dn, int nb, int bs):sdisk(dn,nb,bs){
 		for(int i = 0; i < fatsize; i++){
 			string b;
 			getblock(2+i, b);
+			
 			buffer += b;
 		}
 		instream2.str(buffer);
+		
 		for(int i = 0; i < getnumberofblocks(); i++){
 			int n;
 			instream2>>n;
 			fat.push_back(n);
-		}
+		}cout<<endl;
 	}
 	fssynch();
 }
@@ -86,12 +93,14 @@ int Filesys::fssynch(){
 int Filesys::newfile(string file){
 	for(int  i = 0; i < rootsize; i++){
 		if(filename[i] == file){
-			cout<<"File Already Exists:\n";
+			if(file != "flatfile")
+				if(file != "indexfile")
+				cout<<"File Already Exists:\n";
 			return 0;
 		}
 	}
-	for(int  i = 0; i < rootsize; i++){//cout<<"Here\n";
-		if(filename[i] == "xxxxxxxx"){//cout<<"And Here\n";
+	for(int  i = 0; i < rootsize; i++){
+		if(filename[i] == "xxxxxxxx"){
 			filename[i] = file;
 			fssynch();
 			return 1;
@@ -127,41 +136,15 @@ int Filesys::getfirstblock(string file){
 	return -1;
 }
 
-/*int Filesys::addblock(string file, string block){
-	int first = getfirstblock(file);
-	int allocate = fat[0];
-	if(allocate == 0) //no free blocks
-		return 0;
-	fat[0] = fat[fat[0]];
-	fat[allocate] = 0 ;
-	if(first == 0){
-		for(int i = 0; i < rootsize; i++){
-			if(filename[i] == file){
-				firstblock[i] = allocate;
-				fssynch();
-				putblock(allocate, block);
-				return allocate;
-			}
-		}	
-	}
-	else{
-		int b = first;
-		while(fat[b] != 0){
-			b = fat[b];
-		}
-		fat[b] = allocate;
-		fssynch();
-		putblock(allocate, block);
-		return allocate;
-	}
-	
-	return 0;
-}*/
-
 int Filesys::addblock(string file, string block){
 	int first = getfirstblock(file);
 	int allocate = fat[0];
 	bool filefound = false;
+
+	
+	if(first == -1){
+		return first;
+	}
 	
 	if(allocate == 0){
 		cout<<"Disk is full\n";
@@ -179,18 +162,21 @@ int Filesys::addblock(string file, string block){
 			}
 		}
 	}
-	if(filefound){
-		int next = first;
-		while(fat[next] != 0){
-			next = fat[next];
-			fat[next] = allocate;
-			fat[0] =fat[allocate];
+	else{
+		int next_block = first;
+		if(next_block == 0){
+			fat[0] = fat[allocate];
+			fat[first] = allocate;
 			fat[allocate] = 0;
 		}
-	}
-	else{
-		cout<<"File not found\n";
-		return -1;
+		else{
+			while(fat[next_block] != 0){
+				next_block = fat[next_block];
+			}
+			fat[0] = fat[allocate];
+			fat[next_block] = allocate;
+			fat[allocate] = 0;
+		}
 	}
 	
 	putblock(allocate, block);

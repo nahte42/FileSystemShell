@@ -32,5 +32,6 @@ public:
 	int nextblock(string file, int blocknumber);
 	bool checkblock(string file, int blocknumber);
 	vector<string> ls();
+	int getfatz(){return fat[0];}
 };
 #endif

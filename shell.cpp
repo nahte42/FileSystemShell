@@ -1,6 +1,6 @@
 #include "shell.h"
 
-Shell::Shell(string dn, int bs, int nb):Filesys(dn,bs,nb){}
+Shell::Shell(string dn, int bs, int nb):Table(dn,bs,nb){}
 
 int Shell::dir(){
 	vector<string> flist = ls();
@@ -11,6 +11,7 @@ int Shell::dir(){
 }
 
 int Shell::add(string file){
+	//cout<<"Fat[0] in shell: "<<getfatz()<<endl;
 	vector<string> s_block;
 	newfile(file);
 	cout<<"Input data into file\n"; 
@@ -30,14 +31,25 @@ int Shell::add(string file){
 
 int Shell::del(string file){
 	int code = getfirstblock(file);
+	vector<int> blocks_del;
 	if(code == -1){
 		cout<<"File does not exist\n";
 		return 0;
 	}
-	int iblock = code;
-	while(iblock != -1){
-		delblock(file, iblock);
-		iblock = nextblock(file, iblock);
+	if(code == 0){
+		delblock(file, code);
+		rmfile(file);
+		return 1;
+	}else{
+		int iblock = code;
+		while(iblock != -1){
+			blocks_del.push_back(iblock);
+			iblock = nextblock(file, iblock);
+			
+		}
+		for(int i = 0; i < blocks_del.size(); i++){
+			delblock(file, blocks_del[i]);
+		}
 	}
 	rmfile(file);
 	return 1;
@@ -61,6 +73,7 @@ int Shell::type(string file){
 		}
 		cout<<endl;
 		iblock = nextblock(file, iblock);
+		
 	}
 	return 1;
 }

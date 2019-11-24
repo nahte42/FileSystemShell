@@ -1,14 +1,15 @@
 /****************************
 Ethan Jones (005977513)
 CSE 461
-11/12/2019
+11/23/2019
 
-Homework 3
+Finished Project For CSE 461
 ****************************/
 
 #include <iostream>
 #include <string>
 #include "shell.h"
+#include "Table.h"
 
 using namespace std;
 
@@ -22,12 +23,14 @@ int main()
  string s;
  string command="go";
  string op1,op2;
- sdisk disk1("disk1",256,128);
- Filesys fsys("disk1",256,128);
+ //sdisk disk1("disk1",256,128);
+ //Filesys fsys("disk1",256,128);
  Shell sh("disk1",256,128);
+ //Table tbl("disk1", 256, 128, "flatfile", "indexfile");
 
  while (command != "quit")
      {
+	   //cout<<"Fat[0]: "<<sh.getfatz()<<endl;
        command.clear();
        op1.clear();
        op2.clear();
@@ -66,6 +69,9 @@ int main()
 			sh.copy(op1,op2);
             // The variable op1 is the source file and the variable op2 is the destination file.
            }
+		if(command == "search"){
+			sh.Search(op1);
+		}
        
       }
 
